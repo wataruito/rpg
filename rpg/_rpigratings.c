@@ -13,7 +13,7 @@
 #include <time.h>
 #include <wiringPi.h>
 #include <termios.h>
-#include <stropts.h>
+// #include <stropts.h>
 #include <stdbool.h>
 #include <linux/fb.h>
 
