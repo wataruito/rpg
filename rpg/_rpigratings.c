@@ -914,6 +914,9 @@ double *display_raw(void *frame_data, fb_config *fb0, int trig_pin, int colormod
 
 	pinMode(1, OUTPUT);
 	digitalWrite(1, LOW);
+
+	// Initial trigger to start (2022/07/29 wi)
+
 	if (trig_pin > 0)
 	{
 		pinMode(trig_pin, INPUT);
@@ -949,6 +952,8 @@ double *display_raw(void *frame_data, fb_config *fb0, int trig_pin, int colormod
 	int n_frames = header->n_frames;
 	int refresh_per_frame = header->refresh_per_frame;
 	long timings[n_frames - 1];
+
+	// main loop show gratings (2022/07/29 wi)
 	for (t = 0; t < n_frames; t++)
 	{
 		frame_end = frame_start;
@@ -995,9 +1000,29 @@ double *display_raw(void *frame_data, fb_config *fb0, int trig_pin, int colormod
 				digitalWrite(1, LOW);
 			}
 		}
+
+		// stop if trigger pin is low (2022/07/29 wi)
+		if (trig_pin > 0)
+		{
+			pinMode(trig_pin, INPUT);
+			while (digitalRead(trig_pin) == 0)
+			{
+				if (kbhit())
+				{
+					return NULL;
+				}
+			}
+		}
+
 		if (t != 0)
 		{
 			timings[t - 1] = cmp_times(frame_end, frame_start);
+		}
+
+		// infinite looping (2022/07/29 wi)
+		if (t == n_frames - 1)
+		{
+			t = 0;
 		}
 	}
 	*frame_duration_mean = mean_long(timings, n_frames - 1);
@@ -1113,7 +1138,7 @@ double *display_grating(void *frame_data, fb_config *fb0, int trig_pin, int colo
 			timings[t - 1] = cmp_times(frame_end, frame_start);
 		}
 
-		// indifinit looping (2022/07/18 wi)
+		// infinite looping (2022/07/18 wi)
 		if (t == n_frames - 1)
 		{
 			t = 0;
